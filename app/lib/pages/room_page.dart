@@ -1,54 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:app/pages/room_page.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class RoomPage extends StatefulWidget {
+  final String roomName;
+  const RoomPage({super.key, required this.roomName});
 
   @override
-  HomePageState createState() => HomePageState();
+  RoomPageState createState() => RoomPageState();
 }
 
-class HomePageState extends State<HomePage> {
+class RoomPageState extends State<RoomPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  String _roomName = '';
+  String _deviceName = '';
 
-  Future<void> _addRoom(String roomName) async {
-    final roomExists = await FirebaseFirestore.instance
-        .collection('rooms')
-        .where('name', isEqualTo: roomName)
+  Future<void> _addDevice(String deviceName) async {
+    // cant add device to room if device already exists in this room but can add device to another room ?
+    final deviceExists = await FirebaseFirestore.instance
+        .collection('devices')
+        .where('name', isEqualTo: deviceName)
+        .where('room', isEqualTo: widget.roomName)
         .get();
-
-    if (roomExists.docs.isEmpty) {
-      await FirebaseFirestore.instance.collection('rooms').add({
-        'name': roomName,
-        'created_at': DateTime.now().millisecondsSinceEpoch.toString(),
-      
+    
+    if (deviceExists.docs.isEmpty) {
+      await FirebaseFirestore.instance.collection('devices').add({
+        'name': deviceName,
+        'room': widget.roomName,
       });
     } else {
-      throw Exception('Room already exists.');
+      throw Exception('Device already exists.');
     }
   }
-
-  Future<void> _deleteRoom(String roomId) async {
-    await FirebaseFirestore.instance.collection('rooms').doc(roomId).delete();
+  Future<void> _deleteDevice(String deviceId) async {
+    await FirebaseFirestore.instance.collection('devices').doc(deviceId).delete();
   }
-  Future<void> _showAddRoomDialog(BuildContext context) async {
+
+  Future<void> _showAddDeviceDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add Room'),
+          title: const Text('Add Device'),
           content: Form(
             key: _formKey,
             child: TextFormField(
-              decoration: const InputDecoration(labelText: 'Room Name'),
+              decoration: const InputDecoration(labelText: 'Device Name'),
               onChanged: (value) {
-                _roomName = value;
+                _deviceName = value;
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a room name';
+                  return 'Please enter a device name';
                 }
                 return null;
               },
@@ -65,7 +66,7 @@ class HomePageState extends State<HomePage> {
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
                   try {
-                    await _addRoom(_roomName);
+                    await _addDevice(_deviceName);
                     if (context.mounted) Navigator.of(context).pop();
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -76,23 +77,24 @@ class HomePageState extends State<HomePage> {
                   }
                 }
               },
-              child: const Text('Add Room'),
+              child: const Text('Add Device'),
             ),
           ],
         );
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smart Home'),
+        title: Text('${widget.roomName} Devices'),
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('rooms')
-            .orderBy('created_at', descending: false)
+            .collection('devices')
+            .where('room', isEqualTo: widget.roomName )
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
@@ -102,7 +104,6 @@ class HomePageState extends State<HomePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-
           return GridView.count(
             crossAxisCount: 2,
             children: snapshot.data!.docs.map((DocumentSnapshot document) {
@@ -113,6 +114,7 @@ class HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(8),
+                    // change to device page
                     onTap: () {
                       Navigator.push(
                         context,
@@ -134,7 +136,7 @@ class HomePageState extends State<HomePage> {
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: const Text('Confirm Delete'),
-                            content: const Text('Are you sure you want to delete this room?'),
+                            content: const Text('Are you sure you want to delete this device?'),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -144,7 +146,7 @@ class HomePageState extends State<HomePage> {
                               ),
                               TextButton(
                                 onPressed: () async {
-                                  await _deleteRoom(document.id);
+                                  await _deleteDevice(document.id);
                                   if (context.mounted) Navigator.pop(context);
                                 },
                                 child: const Text('Delete'),
@@ -176,7 +178,7 @@ class HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _showAddRoomDialog(context);
+          _showAddDeviceDialog(context);
         },
         child: const Icon(Icons.add),
       ),
