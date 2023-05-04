@@ -1,24 +1,12 @@
-import 'package:app/pages/accueil.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'pages/auth.dart';
-void main() {
-  runApp(const MyApp());
+import 'package:app/app.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(SmartHomeApp());
 }
-
-class MyApp extends StatelessWidget { // Stateless car le contenu de la page n'est pas modifié
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return  const MaterialApp(
-      home: Scaffold(
-        body: AuthPage(),
-      ),
-    );
-  }
-}
-
-
-
-
-
