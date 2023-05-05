@@ -117,15 +117,19 @@ class HomePageState extends State<HomePage> {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => RoomPage(roomName: document['name']),
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                            RoomPage(roomName: document['name']),
                           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                          transitionDuration: const Duration(milliseconds: 500),
-                        ),
+                            return SlideTransition(
+                          position: Tween<Offset>(
+                          begin: const Offset(1, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 200),
+                  ),
                       );
                     },
                     onLongPress: () {
