@@ -8,6 +8,7 @@ class SmartHomeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Smart Home',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
