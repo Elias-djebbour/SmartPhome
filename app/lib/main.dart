@@ -8,5 +8,5 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(SmartHomeApp());
+  runApp(const SmartHomeApp());
 }

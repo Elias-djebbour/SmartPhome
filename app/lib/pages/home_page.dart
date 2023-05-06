@@ -31,6 +31,8 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> _deleteRoom(String roomId) async {
+    String roomName = (await FirebaseFirestore.instance.collection('rooms').doc(roomId).get())['name'];
+    await RoomPage.deleteDevicesInRoom(roomName);
     await FirebaseFirestore.instance.collection('rooms').doc(roomId).delete();
   }
   Future<void> _showAddRoomDialog(BuildContext context) async {

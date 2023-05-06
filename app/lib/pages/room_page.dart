@@ -7,6 +7,20 @@ class RoomPage extends StatefulWidget {
 
   @override
   RoomPageState createState() => RoomPageState();
+
+  static Future<void> deleteDevicesInRoom(String roomName) async {
+    final roomPageState = RoomPageState();
+    final devices = await FirebaseFirestore.instance
+        .collection('devices')
+        .where('room', isEqualTo: roomName)
+        .get();
+
+    for (var device in devices.docs) {
+      String deviceName = device['name'];
+      String deviceType = device['type'];
+      await roomPageState._updateDeviceRoom(deviceName, deviceType, 'delete');
+    }
+  }
 }
 
 class RoomPageState extends State<RoomPage> {

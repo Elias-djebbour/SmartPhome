@@ -1,4 +1,3 @@
-import 'package:app/pages/accueil.dart';
 import 'package:flutter/material.dart';
 import 'pages/auth.dart';
 void main() {

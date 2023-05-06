@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'accueil.dart';
-import '/button.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({

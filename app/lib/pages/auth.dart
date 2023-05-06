@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'accueil.dart';
-import '/button.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({
@@ -105,13 +103,11 @@ class AuthPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    style: buttonPrimary,
                     onPressed: () {}, 
                     child: const Text("Sign in")
                   ),
-                  Padding(padding: EdgeInsets.only(top: 30)),
+                  const Padding(padding: EdgeInsets.only(top: 30)),
                   ElevatedButton(
-                    style: buttonPrimary,
                     onPressed: () {}, 
                     child: const Text("Create an account")
                   )
