@@ -14,8 +14,19 @@ class _SensorPageState extends State<SensorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.deviceName} Devices'),
+     appBar: AppBar(
+        
+        backgroundColor: Colors.transparent, // Ajout de cette ligne
+        elevation: 0,
+        title: Text('${widget.deviceName}', style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+        // Add an app bar with a back button
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen (homepage)
+          },
+        ),
+        // ...
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance

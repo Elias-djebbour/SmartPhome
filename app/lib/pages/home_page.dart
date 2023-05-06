@@ -89,7 +89,9 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smart Home'),
+        title: const Text('WELCOMETO SMART HOME', style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+        backgroundColor: Colors.transparent, // Ajout de cette ligne
+        elevation: 0,
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
