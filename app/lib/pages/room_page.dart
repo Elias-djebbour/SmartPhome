@@ -12,8 +12,15 @@ class RoomPage extends StatefulWidget {
 class RoomPageState extends State<RoomPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String _deviceName = '';
+  String _deviceType = '';
+  String _pinNumber = '';
+  TextEditingController _delayController = TextEditingController();
+  ValueNotifier<bool> refreshSensorList = ValueNotifier<bool>(false);
 
-  Future<void> _addDevice(String deviceName) async {
+
+
+
+  Future<void> _addDevice(String deviceName, String deviceType) async {
     // cant add device to room if device already exists in this room but can add device to another room ?
     final deviceExists = await FirebaseFirestore.instance
         .collection('devices')
@@ -23,67 +30,255 @@ class RoomPageState extends State<RoomPage> {
     
     if (deviceExists.docs.isEmpty) {
       await FirebaseFirestore.instance.collection('devices').add({
+        'type': deviceType,
         'name': deviceName,
         'room': widget.roomName,
+        'pin' : int.parse(_pinNumber),
       });
     } else {
       throw Exception('Device already exists.');
     }
   }
-  Future<void> _deleteDevice(String deviceId) async {
-    await FirebaseFirestore.instance.collection('devices').doc(deviceId).delete();
+  Future<void> _updateDeviceRoom(String deviceName, String deviceType, String option) async {
+  // Get the device with the given name.
+  final deviceQuery = await FirebaseFirestore.instance
+      .collection('devices')
+      .where('name', isEqualTo: deviceName)
+      .get();
+
+  // If adding a new actuator device, add it directly and return
+  if (option == 'add' && deviceType == 'actuator') {
+    await _addDevice(deviceName, deviceType);
+    return;
   }
 
+  // Check if the device exists.
+  if (deviceQuery.docs.isNotEmpty) {
+    // Get the document ID of the device.
+    String deviceId = deviceQuery.docs.first.id;
+
+    if (option == 'delete') {
+      if (deviceType == 'sensor') {
+        await FirebaseFirestore.instance.collection('devices')
+        .doc(deviceId)
+        .update({
+          'room': null,
+          'delay': null
+        });
+      } else if (deviceType == 'actuator') {
+        await FirebaseFirestore.instance.collection('devices').doc(deviceId).delete();
+      }
+    } else if (option == 'add') {
+      if (deviceType == 'sensor') {
+        await FirebaseFirestore.instance.collection('devices')
+        .doc(deviceId)
+        .update({
+          'room': widget.roomName,
+          'delay': int.parse(_delayController.text)
+        });
+      }
+    }
+  } else {
+    throw Exception('Device not found.');
+  }
+}
+
+
+
   Future<void> _showAddDeviceDialog(BuildContext context) async {
+    void resetForm() {
+        _formKey.currentState!.reset();
+        _deviceType = '';
+        _deviceName = '';
+        _pinNumber = '';
+        _delayController.text = '';
+      }
+
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add Device'),
-          content: Form(
-            key: _formKey,
-            child: TextFormField(
-              decoration: const InputDecoration(labelText: 'Device Name'),
-              onChanged: (value) {
-                _deviceName = value;
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a device name';
-                }
-                return null;
-              },
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text('Add Device'),
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    DropdownButtonFormField<String>(
+                      decoration:
+                          const InputDecoration(labelText: 'Device Type'),
+                      value: _deviceType.isEmpty ? null : _deviceType,
+                      items: [
+                        DropdownMenuItem(
+                            child: Text('Actuator'), value: 'actuator'),
+                        DropdownMenuItem(child: Text('Sensor'), value: 'sensor'),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _deviceType = value!;
+                          if (_deviceType == 'sensor') {
+                          _deviceName = '';
+                          _delayController.text = '';
+                          _pinNumber = '';
+                        }
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a device type';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (_deviceType == 'actuator')
+
+                    Column(
+                      children: [
+                        TextFormField(
+                          decoration: const InputDecoration(labelText: 'Device Name'),
+                          onChanged: (value) {
+                            _deviceName = value;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a device name';
+                            }
+                            return null;
+                          },
+                        ),
+                        TextFormField(
+                          decoration: const InputDecoration(labelText: 'Pin Number'),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            _pinNumber = value;
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a pin number';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                    
+                  if (_deviceType == 'sensor')
+                    
+                    FutureBuilder<QuerySnapshot>(
+                      future: FirebaseFirestore.instance.collection('devices').where('room',isNull: true).where('type',isEqualTo: 'sensor').get(),
+                      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        return DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(labelText: 'Sensor Name'),
+                          value: _deviceName.isEmpty ? null : _deviceName,
+                          items: snapshot.data!.docs.map((DocumentSnapshot document) {
+                            String sensorName = document['name'];
+                            return DropdownMenuItem(child: Text(sensorName), value: sensorName);
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _deviceName = value!;
+                              _delayController.text = '';
+                              _pinNumber = '';
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a sensor name';
+                            }
+                            return null;
+                          },
+                          
+                          
+                        );
+                        
+                        
+                      },
+                      
+                      
+                    ),
+                    if (_deviceType == 'sensor' && _deviceName.isNotEmpty)
+                    FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('devices')
+                          .where('name', isEqualTo: _deviceName)
+                          .get()
+                          .then((querySnapshot) => querySnapshot.docs.first),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        Map<String, dynamic> sensorData = snapshot.data!.data() as Map<String, dynamic>;
+
+                        if (sensorData.containsKey('delay')) {
+                          return TextFormField(
+                            controller: _delayController,
+                            decoration:
+                                const InputDecoration(labelText: 'Sensor Delay'),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter a delay value';
+                              }
+                              return null;
+                            },
+                          );
+                        }
+                        return SizedBox.shrink();
+                      },
+                    ),                 
+                    
+                ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  try {
-                    await _addDevice(_deviceName);
-                    if (context.mounted) Navigator.of(context).pop();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(e.toString()),
-                      ),
-                    );
+            actions: [
+              TextButton(
+                onPressed: () {
+                  resetForm();
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  if (_formKey.currentState!.validate()) {
+                    try {
+                          await _updateDeviceRoom(_deviceName, _deviceType, 'add');
+                          resetForm();
+                      if (context.mounted) Navigator.of(context).pop();
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(e.toString()),
+                        ),
+                      );
+                    }
                   }
-                }
-              },
-              child: const Text('Add Device'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+                },
+                child: const Text('Add Device'),
+              ),
+            ],
+                  );
+    },
+  );
+},
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +345,7 @@ class RoomPageState extends State<RoomPage> {
                               ),
                               TextButton(
                                 onPressed: () async {
-                                  await _deleteDevice(document.id);
+                                  await _updateDeviceRoom(_deviceName,_deviceType, 'delete');
                                   if (context.mounted) Navigator.pop(context);
                                 },
                                 child: const Text('Delete'),
