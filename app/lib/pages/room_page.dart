@@ -1,7 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'package:app/pages/sensor_page.dart';
+import 'package:app/pages/actuator_page.dart';
 class RoomPage extends StatefulWidget {
   final String roomName;
   const RoomPage({super.key, required this.roomName});
@@ -308,6 +309,14 @@ class RoomPageState extends State<RoomPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.roomName} Devices'),
+        // Add an app bar with a back button
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen (homepage)
+          },
+        ),
+        // ...
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -334,25 +343,25 @@ class RoomPageState extends State<RoomPage> {
                     borderRadius: BorderRadius.circular(8),
                     // change to device page
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  RoomPage(roomName: document['name']),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(1, 0),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
-                            );
-                          },
-                          transitionDuration: const Duration(milliseconds: 200),
-                        ),
-                      );
+                      final deviceType = document['type'];
+                      final deviceName = document['name'];
+
+                      if (deviceType == 'sensor') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SensorPage(deviceName: deviceName),
+                          ),
+                        );
+                      } else if (deviceType == 'actuator') {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ActuatorPage(),
+                          ),
+                        );
+                      }
+                      
                     },
                     onLongPress: () {
                       showDialog( 
