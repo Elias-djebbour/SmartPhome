@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -81,7 +82,9 @@ class RoomPageState extends State<RoomPage> {
               .collection('devices')
               .doc(deviceId)
               .delete();
-        }
+        }else {
+        throw Exception('Invalid option.');
+      }
       } else if (option == 'add') {
         if (deviceType == 'sensor') {
           await FirebaseFirestore.instance
@@ -92,6 +95,8 @@ class RoomPageState extends State<RoomPage> {
             'delay': int.parse(_delayController.text)
           });
         }
+      } else {
+        throw Exception('Invalid option.');
       }
     } else {
       throw Exception('Device not found.');
@@ -350,7 +355,7 @@ class RoomPageState extends State<RoomPage> {
                       );
                     },
                     onLongPress: () {
-                      showDialog(
+                      showDialog( 
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
@@ -366,8 +371,12 @@ class RoomPageState extends State<RoomPage> {
                               ),
                               TextButton(
                                 onPressed: () async {
+                                  _deviceName = document['name'];
+                                  _deviceType = document['type'];
                                   await _updateDeviceRoom(
                                       _deviceName, _deviceType, 'delete');
+                                  _deviceName = '';
+                                  _deviceType = '';
                                   if (context.mounted) Navigator.pop(context);
                                 },
                                 child: const Text('Delete'),
