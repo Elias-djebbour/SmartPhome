@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:app/pages/sensor_page.dart';
@@ -47,6 +46,7 @@ class RoomPageState extends State<RoomPage> {
         'name': deviceName,
         'room': widget.roomName,
         'pin': int.parse(_pinNumber),
+        'state': 0,
       });
     } else {
       throw Exception('Device already exists.');
@@ -361,7 +361,7 @@ class RoomPageState extends State<RoomPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ActuatorPage(),
+                            builder: (context) => ActuatorPage(deviceName: deviceName),
                           ),
                         );
                       }
