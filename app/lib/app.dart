@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:app/pages/home_page.dart';
+import 'package:app/pages/auth_page.dart';
 
 class SmartHomeApp extends StatelessWidget {
   const SmartHomeApp({super.key});
@@ -12,7 +13,7 @@ class SmartHomeApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      home: const Authentification_page(),
     );
   }
 }
