@@ -26,7 +26,7 @@ class HomePageState extends State<HomePage> {
       
       });
     } else {
-      throw Exception('Room already exists.');
+      throw Exception('La pièce existe déjà');
     }
   }
 
@@ -40,17 +40,17 @@ class HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Add Room'),
+          title: const Text('Ajouter une pièce'),
           content: Form(
             key: _formKey,
             child: TextFormField(
-              decoration: const InputDecoration(labelText: 'Room Name'),
+              decoration: const InputDecoration(labelText: 'Nom de la pièce'),
               onChanged: (value) {
                 _roomName = value;
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a room name';
+                  return 'Veuillez entrer un nom de pièce';
                 }
                 return null;
               },
@@ -61,7 +61,7 @@ class HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Cancel'),
+              child: const Text('Annuler'),
             ),
             TextButton(
               onPressed: () async {
@@ -78,7 +78,7 @@ class HomePageState extends State<HomePage> {
                   }
                 }
               },
-              child: const Text('Add Room'),
+              child: const Text('Ajouter'),
             ),
           ],
         );
@@ -89,7 +89,7 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('WELCOME TO SMART HOME', style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
+        title: const Text('Bienvenue dans SmartPhome !', style: TextStyle(color: Colors.black), textAlign: TextAlign.center),
         backgroundColor: Colors.transparent, // Ajout de cette ligne
         elevation: 0,
       ),
@@ -100,7 +100,7 @@ class HomePageState extends State<HomePage> {
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Erreur: ${snapshot.error}'));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -141,21 +141,21 @@ class HomePageState extends State<HomePage> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Confirm Delete'),
-                            content: const Text('Are you sure you want to delete this room?'),
+                            title: const Text('Supprimer la pièce'),
+                            content: const Text('Etes-vous sûr de vouloir supprimer cette pièce ?'),
                             actions: [
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
                                 },
-                                child: const Text('Cancel'),
+                                child: const Text('Annuler'),
                               ),
                               TextButton(
                                 onPressed: () async {
                                   await _deleteRoom(document.id);
                                   if (context.mounted) Navigator.pop(context);
                                 },
-                                child: const Text('Delete'),
+                                child: const Text('Supprimer'),
                               ),
                             ],
                           );

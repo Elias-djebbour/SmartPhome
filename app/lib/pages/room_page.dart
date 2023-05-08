@@ -57,10 +57,10 @@ class RoomPageState extends State<RoomPage> {
           'state': 0,
         });
       } else {
-        throw Exception('Pin already used.');
+        throw Exception('Le pin est déjà utilisé');
       }
     } else {
-      throw Exception('Device already exists.');
+      throw Exception('L\'appareil existe déjà dans cette pièce');
     }
   }
 
@@ -95,7 +95,7 @@ class RoomPageState extends State<RoomPage> {
               .doc(deviceId)
               .delete();
         }else {
-        throw Exception('Invalid option.');
+        throw Exception('Option invalide.');
       }
       } else if (option == 'add') {
         if (deviceType == 'sensor') {
@@ -108,7 +108,7 @@ class RoomPageState extends State<RoomPage> {
           });
         }
       } else {
-        throw Exception('Invalid option.');
+        throw Exception('Option invalide.');
       }
     } else {
       throw Exception('Device not found.');
@@ -136,7 +136,7 @@ class RoomPageState extends State<RoomPage> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             return AlertDialog(
-              title: const Text('Add Device'),
+              title: const Text('Ajouter un appareil'),
               content: Form(
                 key: _formKey,
                 child: Column(
@@ -144,13 +144,13 @@ class RoomPageState extends State<RoomPage> {
                   children: [
                     DropdownButtonFormField<String>(
                       decoration:
-                          const InputDecoration(labelText: 'Device Type'),
+                          const InputDecoration(labelText: 'Type'),
                       value: _deviceType.isEmpty ? null : _deviceType,
                       items: const [
                         DropdownMenuItem(
-                            value: 'actuator', child: Text('Actuator')),
+                            value: 'actuator', child: Text('Actuateur')),
                         DropdownMenuItem(
-                            value: 'sensor', child: Text('Sensor')),
+                            value: 'sensor', child: Text('Capteur')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -164,7 +164,7 @@ class RoomPageState extends State<RoomPage> {
                       },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please select a device type';
+                          return 'Veuillez choisir un type';
                         }
                         return null;
                       },
@@ -174,27 +174,27 @@ class RoomPageState extends State<RoomPage> {
                         children: [
                           TextFormField(
                             decoration:
-                                const InputDecoration(labelText: 'Device Name'),
+                                const InputDecoration(labelText: 'Nom'),
                             onChanged: (value) {
                               _deviceName = value;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter a device name';
+                                return 'Veuillez entrer un nom';
                               }
                               return null;
                             },
                           ),
                           TextFormField(
                             decoration:
-                                const InputDecoration(labelText: 'Pin Number'),
+                                const InputDecoration(labelText: 'Pin'),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
                               _pinNumber = value;
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter a pin number';
+                                return 'Veuillez entrer un pin';
                               }
                               return null;
                             },
@@ -221,7 +221,7 @@ class RoomPageState extends State<RoomPage> {
 
                           return DropdownButtonFormField<String>(
                             decoration:
-                                const InputDecoration(labelText: 'Sensor Name'),
+                                const InputDecoration(labelText: 'Nom'),
                             value: _deviceName.isEmpty ? null : _deviceName,
                             items: snapshot.data!.docs
                                 .map((DocumentSnapshot document) {
@@ -238,7 +238,7 @@ class RoomPageState extends State<RoomPage> {
                             },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please select a sensor name';
+                                return 'Veuillez choisir un nom';
                               }
                               return null;
                             },
@@ -260,7 +260,7 @@ class RoomPageState extends State<RoomPage> {
                           }
 
                           if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
+                            return Text('Erreur: ${snapshot.error}');
                           }
 
                           Map<String, dynamic> sensorData =
@@ -270,11 +270,11 @@ class RoomPageState extends State<RoomPage> {
                             return TextFormField(
                               controller: _delayController,
                               decoration: const InputDecoration(
-                                  labelText: 'Sensor Delay'),
+                                  labelText: 'Délai (en millisecondes)'),
                               keyboardType: TextInputType.number,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter a delay value';
+                                  return 'Veuillez entrer un délai';
                                 }
                                 return null;
                               },
@@ -292,7 +292,7 @@ class RoomPageState extends State<RoomPage> {
                     resetForm();
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Annuler'),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -311,7 +311,7 @@ class RoomPageState extends State<RoomPage> {
                       }
                     }
                   },
-                  child: const Text('Add Device'),
+                  child: const Text('Ajouter'),
                 ),
               ],
             );
@@ -346,7 +346,7 @@ class RoomPageState extends State<RoomPage> {
             .snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Erreur: ${snapshot.error}'));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -389,15 +389,15 @@ class RoomPageState extends State<RoomPage> {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Confirm Delete'),
+                            title: const Text('Supprimer l\'appareil'),
                             content: const Text(
-                                'Are you sure you want to delete this device?'),
+                                'Voulez-vous vraiment supprimer cet appareil ?'),
                             actions: [
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
                                 },
-                                child: const Text('Cancel'),
+                                child: const Text('Annuler'),
                               ),
                               TextButton(
                                 onPressed: () async {
@@ -409,7 +409,7 @@ class RoomPageState extends State<RoomPage> {
                                   _deviceType = '';
                                   if (context.mounted) Navigator.pop(context);
                                 },
-                                child: const Text('Delete'),
+                                child: const Text('Supprimer'),
                               ),
                             ],
                           );
