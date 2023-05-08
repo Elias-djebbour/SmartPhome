@@ -39,15 +39,26 @@ class RoomPageState extends State<RoomPage> {
         .where('name', isEqualTo: deviceName)
         .where('room', isEqualTo: widget.roomName)
         .get();
+    
+    final pinExists = await FirebaseFirestore.instance
+        .collection('devices')
+        .where('pin', isEqualTo: int.parse(_pinNumber))
+        .where('room', isEqualTo: widget.roomName)
+        .get();
 
     if (deviceExists.docs.isEmpty) {
-      await FirebaseFirestore.instance.collection('devices').add({
-        'type': deviceType,
-        'name': deviceName,
-        'room': widget.roomName,
-        'pin': int.parse(_pinNumber),
-        'state': 0,
-      });
+      if (pinExists.docs.isEmpty) {
+
+        await FirebaseFirestore.instance.collection('devices').add({
+          'type': deviceType,
+          'name': deviceName,
+          'room': widget.roomName,
+          'pin': int.parse(_pinNumber),
+          'state': 0,
+        });
+      } else {
+        throw Exception('Pin already used.');
+      }
     } else {
       throw Exception('Device already exists.');
     }
@@ -112,6 +123,12 @@ class RoomPageState extends State<RoomPage> {
       _pinNumber = '';
       _delayController.text = '';
     }
+
+    final pinExists = FirebaseFirestore.instance
+        .collection('devices')
+        .where('pin', isEqualTo: int.parse(_pinNumber))
+        .where('room', isEqualTo: widget.roomName)
+        .get();
 
     return showDialog<void>(
       context: context,
