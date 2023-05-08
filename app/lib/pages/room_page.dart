@@ -124,12 +124,6 @@ class RoomPageState extends State<RoomPage> {
       _delayController.text = '';
     }
 
-    final pinExists = FirebaseFirestore.instance
-        .collection('devices')
-        .where('pin', isEqualTo: int.parse(_pinNumber))
-        .where('room', isEqualTo: widget.roomName)
-        .get();
-
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -193,8 +187,8 @@ class RoomPageState extends State<RoomPage> {
                               _pinNumber = value;
                             },
                             validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Veuillez entrer un pin';
+                              if (value == null || value.isEmpty || int.parse(value) > 13) {
+                                return 'Veuillez entrer un pin valide';
                               }
                               return null;
                             },
